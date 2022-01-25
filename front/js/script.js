@@ -1,24 +1,52 @@
-let kanap = [];
-
 const fetchKanap = async () => {
-  await fetch("http://localhost:3000/api/products")
-    .then((reponse) => reponse.json())
-    .then((reponse2) => (kanap = reponse2));
-  console.log(kanap[2]);
+  const reponse = await fetch("http://localhost:3000/api/products");
+  console.log(reponse);
+  return reponse.json();
 };
 
 const userDisplay = async () => {
-  await fetchKanap();
-  document.getElementById("items").innerHTML = kanap
-    .map(
-      (kanap) => `<a href="./product.html?id=${kanap._id}">
-    <article>
-    <img src="${kanap.imageUrl}" alt="${kanap.altTxt}">
-    <h3 class="productName">${kanap.name}</h3>
-    <p class="productDescription">${kanap.description}</p>
-    </article>
-    </a>`
-    )
-    .join("");
+  const kanap = await fetchKanap();
+  console.log(kanap);
+  kanap.map((prod) => {
+    create(prod);
+  });
 };
-userDisplay();
+
+function create(prod) {
+  let link = createElem("a");
+  link.setAttribute("href", "./product.html?id=" + prod._id);
+
+  let article = createElem("article");
+
+  let img = createElem("img");
+  img.setAttribute("src", prod.imageUrl);
+  img.setAttribute("alt", prod.altTxt);
+
+  let h3 = createElem("h3");
+  h3.setAttribute("class", "productName");
+  h3.textContent = prod.name;
+
+  let para = createElem("p");
+  para.setAttribute("class", "productDescription");
+  para.textContent = prod.description;
+
+  article.append(img, h3, para);
+
+  link.append(article);
+
+  getById("items").append(link);
+}
+/* TOOLS */
+function createElem(type) {
+  return document.createElement(type);
+}
+
+function getById(id) {
+  return document.getElementById(id);
+}
+
+window.onload = function () {
+  // console.log("slt");
+  userDisplay();
+};
+
