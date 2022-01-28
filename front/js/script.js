@@ -1,7 +1,7 @@
 const fetchKanap = async () => {
   const reponse = await fetch("http://localhost:3000/api/products");
   console.log(reponse);
-  return reponse.json();
+  return reponse.json(); // methode qui s'auto-resout en renvoiyant le body de la requete
 };
 
 const userDisplay = async () => {

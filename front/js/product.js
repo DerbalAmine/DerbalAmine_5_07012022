@@ -1,7 +1,7 @@
-const productSearch = window.location.href;
-const url = new URL(productSearch);
+const product = window.location.href;
+const url = new URL(product);
 const id = url.searchParams.get("id");
-const product = "";
+//const product = "";
 
 console.log(id);
 // je Récupére des articles de l'API
@@ -10,22 +10,23 @@ const getProduct = async () => {
     .then((res) => {
       return res.json();
     })
-    // Répartition des données de l'API 
+    // Répartition des données de l'API
     .then(function (resultatAPI) {
       const product = resultatAPI;
       console.table(product);
       selectColors(product);
       create(product);
+     // Panier(product);
     });
 };
-//fonction qui permet d'afficher les infos .... produits description 
+//fonction qui permet d'afficher les infos .... produits description
 function create(product) {
   const getImg = document.createElement("img");
   getImg.src = product.imageUrl;
   getImg.alt = product.altTxt;
   document.querySelector(".item__img").appendChild(getImg);
 
-  const getTitle = document.getElementById("title");
+  const getTitle = document.getElementById("title"); // variable qui est egal a l'id "title"
   getTitle.textContent = product.name;
 
   const getPrice = document.getElementById("price");
@@ -35,13 +36,24 @@ function create(product) {
   descriptionArticle.textContent = product.description;
 }
 
+// Fonction qui permet d'inserer des options de couleur
 function selectColors(product) {
-  // Fonction qui permet d'inserer des options de couleur
   for (const couleur of product.colors) {
     const colorsArticle = document.createElement("option");
     colorsArticle.value = couleur;
-    colorsArticle.innerHTML = couleur;
+    colorsArticle.textContent = couleur;
     document.getElementById("colors").appendChild(colorsArticle);
   }
 }
+
+/*function Panier(product) {
+  const achat = document.getElementById("addToCart");
+  achat.addEventListener("click", function () {
+    if (document.getElementById("quantity").value > 0) {
+      let quantityProduit = parseInt(document.getElementById("quantity").value); //parseInt analyse une chaine en nombre 
+      let couleurProduit = document.getElementById("colors").value;
+    }
+  });
+}*/
+
 getProduct();
