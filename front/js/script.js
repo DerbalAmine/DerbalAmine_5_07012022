@@ -12,7 +12,7 @@ const userDisplay = async () => {
   });
 };
 
-function create(prod) {
+const create = (prod) => {
   let link = createElem("a");
   link.setAttribute("href", "./product.html?id=" + prod._id);
 

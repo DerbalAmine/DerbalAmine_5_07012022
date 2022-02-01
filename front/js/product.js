@@ -1,59 +1,92 @@
-const product = window.location.href;
-const url = new URL(product);
-const id = url.searchParams.get("id");
-//const product = "";
+let id = new URLSearchParams(window.location.search).get("id"); // Permet de récupérer la valeur de l'ID
 
-console.log(id);
-// je Récupére des articles de l'API
-const getProduct = async () => {
-  await fetch(`http://localhost:3000/api/products/${id}`)
+// je Récupére un article de l'API
+const getProduct = () => {
+  //const id = new URLSearchParams(window.location.search).get("id");
+  fetch(`http://localhost:3000/api/products/${id}`)
     .then((res) => {
       return res.json();
     })
     // Répartition des données de l'API
-    .then(function (resultatAPI) {
-      const product = resultatAPI;
+    .then(function (product) {
       console.table(product);
-      selectColors(product);
       create(product);
-     // Panier(product);
+      stockCart(product);
     });
 };
 //fonction qui permet d'afficher les infos .... produits description
-function create(product) {
-  const getImg = document.createElement("img");
+const create = (product) => {
+  for (const couleur of product.colors) {
+    const colorsArticle = createElem("option");
+    colorsArticle.value = couleur;
+    colorsArticle.textContent = couleur;
+    getById("colors").appendChild(colorsArticle);
+  }
+  const getImg = createElem("img");
   getImg.src = product.imageUrl;
   getImg.alt = product.altTxt;
   document.querySelector(".item__img").appendChild(getImg);
 
-  const getTitle = document.getElementById("title"); // variable qui est egal a l'id "title"
+  const getTitle = getById("title"); // variable qui est egal a l'id "title"
   getTitle.textContent = product.name;
 
-  const getPrice = document.getElementById("price");
+  const getPrice = getById("price");
   getPrice.textContent = product.price;
 
-  const descriptionArticle = document.getElementById("description");
+  const descriptionArticle = getById("description");
   descriptionArticle.textContent = product.description;
-}
+};
+// Fonction qui permet d'ajouter un produit
+const stockCart = (product) => {
+  getById("addToCart").addEventListener("click", () => {
+    if (getById("quantity").value > 0) {
+      let qty = parseInt(getById("quantity").value);
+      let color = getById("colors").value;
 
-// Fonction qui permet d'inserer des options de couleur
-function selectColors(product) {
-  for (const couleur of product.colors) {
-    const colorsArticle = document.createElement("option");
-    colorsArticle.value = couleur;
-    colorsArticle.textContent = couleur;
-    document.getElementById("colors").appendChild(colorsArticle);
-  }
-}
+      let Prod = {
+        qty: qty,
+        color: color,
+        id: id,
+        prix: product.price,
+        nom: product.name,
+      };
+      let cart = JSON.parse(localStorage.getItem("Article"));
+      console.table(cart);
 
-/*function Panier(product) {
-  const achat = document.getElementById("addToCart");
-  achat.addEventListener("click", function () {
-    if (document.getElementById("quantity").value > 0) {
-      let quantityProduit = parseInt(document.getElementById("quantity").value); //parseInt analyse une chaine en nombre 
-      let couleurProduit = document.getElementById("colors").value;
+      if (cart == null) {
+        cart = [];
+        cart.push(Prod);
+        localStorage.setItem("Article", JSON.stringify(cart));
+        alert("Produit ajouté au panier avec succès");
+      } else {
+        const searchStorage = cart.find(
+          (strg) => strg.id === id && strg.color === color
+        );
+        if (searchStorage) {
+          let nvQuantity = Prod.qty + searchStorage.qty;
+          searchStorage.qty = nvQuantity;
+          localStorage.setItem("Article", JSON.stringify(cart));
+          window.alert("Produit ajouté au panier");
+        } else {
+          cart.push(Prod);
+          localStorage.setItem("Article", JSON.stringify(cart));
+        }
+      }
+    } else {
+      alert("Veuillez choisir une Quantité");
     }
   });
-}*/
+};
+/* TOOLS */
+function createElem(type) {
+  return document.createElement(type);
+}
 
-getProduct();
+function getById(id) {
+  return document.getElementById(id);
+}
+
+window.onload = function () {
+  // console.log("DOM is loaded");
+  getProduct();
+};
