@@ -44,11 +44,13 @@ const stockCart = (product) => {
       let color = getById("colors").value;
 
       let Prod = {
+        img: product.imageUrl,
         qty: qty,
         color: color,
         id: id,
         prix: product.price,
         nom: product.name,
+        alt: product.altTxt,
       };
       let cart = JSON.parse(localStorage.getItem("Article"));
       console.table(cart);
