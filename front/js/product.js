@@ -62,12 +62,12 @@ const stockCart = (product) => {
         alert("Produit ajouté au panier avec succès");
       } else {
         const searchStorage = cart.find(
-          (strg) => strg.id === id && strg.color === color
+          (strg) => strg.id === id && strg.color === color // la methode find renvoie la valeur du premier element trouver
         );
         if (searchStorage) {
           let nvQuantity = Prod.qty + searchStorage.qty;
           searchStorage.qty = nvQuantity;
-          localStorage.setItem("Article", JSON.stringify(cart));
+          localStorage.setItem("Article", JSON.stringify(cart)); // la methode stringify convertit une valeur js en chaine JSON
           window.alert("Produit ajouté au panier");
         } else {
           cart.push(Prod);
