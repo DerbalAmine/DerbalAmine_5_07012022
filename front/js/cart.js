@@ -1,163 +1,328 @@
-let addArticle = JSON.parse(localStorage.getItem("Article"));
+let cart = JSON.parse(localStorage.getItem("cart"));
 
-function initPage() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("orderId") !== null) {
-    const elem = getById("orderId");
-    elem.textContent = params.get("orderId");
-    return false;
+//Insère l'id de commande dans la page confirmation
+const initPage = () => {
+  const url = new URL(window.location.href);
+  const orderId = url.searchParams.get("order_id");
+  const elem = getById("orderId");
+  if (elem != null) {
+    elem.textContent = orderId;
   }
-  //récupére le local storage
-  // fait un  boucle sur le le tableau
-  // chaque tour de boucle, récupére l'id du prod et fait un requete à l'API
-  // récupére le produit depuis le back fetch ('http://localhost:3000/api/products?id=' + mavarible),
-  // modifie la couleur par la couleur du local storage
-  // crée la quantité par le quantité du local storage
-}
+};
+initPage();
 
-const panierDisplay = () => {
-  //  permet d'inserer le contenu du local storage dans la page panier.
+//Ajoute le html avec les valeurs retournées par fetch
+const panierDisplay = (value) => {
+  let getArticle = createElem("article");
+  getArticle.setAttribute("class", "cart__item");
+  getArticle.setAttribute("data-id", value._id);
+  getArticle.setAttribute("data-color", cart[i].color);
+  let target = querySelect("#cart__items");
+  target.appendChild(getArticle); // la methode appendChild  vous permet d'ajouter un nœud à la fin de la liste des nœuds enfants d'un nœud parent spécifié.
+  getArticle = createElem("div");
+  getArticle.setAttribute("class", "cart__item__img");
+  target = selectAll(".cart__item");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("img");
+  getArticle.src = value.imageUrl;
+  getArticle.alt = value.altTxt;
+  target = selectAll(".cart__item__img");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("div");
+  getArticle.className = "cart__item__content";
+  target = selectAll(".cart__item");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("div");
+  getArticle.className = "cart__item__content__description";
+  target = selectAll(".cart__item__content");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("h2");
+  getArticle.textContent = value.name;
+  target = selectAll(".cart__item__content__description");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("p");
+  getArticle.textContent = cart[i].color;
+  target = selectAll(".cart__item__content__description");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("p");
+  getArticle.textContent = `${value.price} €`;
+  target = selectAll(".cart__item__content__description");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("div");
+  getArticle.className = "cart__item__content__settings";
+  target = selectAll(".cart__item__content");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("div");
+  getArticle.className = "cart__item__content__settings__quantity";
+  target = selectAll(".cart__item__content__settings");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("p");
+  getArticle.textContent = "Qté : ";
+  target = selectAll(".cart__item__content__settings__quantity");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("input");
+  getArticle.setAttribute("type", "number");
+  getArticle.className = "itemQuantity";
+  getArticle.setAttribute("name", "itemQuantity");
+  getArticle.setAttribute("min", 1);
+  getArticle.setAttribute("max", 100);
+  getArticle.setAttribute("value", cart[i].quantity);
+  target = selectAll(".cart__item__content__settings__quantity");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("div");
+  getArticle.className = "cart__item__content__settings__delete";
+  target = selectAll(".cart__item__content__settings");
+  target[target.length - 1].appendChild(getArticle);
+  getArticle = createElem("p");
+  getArticle.className = "deleteItem";
+  getArticle.textContent = "Supprimer";
+  target = selectAll(".cart__item__content__settings__delete");
+  target[target.length - 1].appendChild(getArticle);
+};
 
-  if (addArticle !== null) {
-    for (const product in addArticle) {
-      const getArticle = creatEl("article");
-      getArticle.className = "cart__item";
-      getArticle.setAttribute(
-        "data-color",
-        addArticle[product].colorArticlePanier
+//boucle qui calcule le prix total des produits dans le panier
+const totalPrice = () => {
+  let cartProducts = selectAll(".cart__item");
+  let totalPrice = 0;
+  for (let i = 0; i < cartProducts.length; i++) {
+    let price = selectAll(".cart__item__content__description")[i].lastChild
+      .textContent;
+    let qty = selectAll(".itemQuantity")[i].value;
+    totalPrice += parseInt(price) * parseInt(qty); //parseInt analyse une chaine de caractere fournie en argument et renvoie un element exprimer dans la base de donnee
+  }
+  querySelect("#totalPrice").textContent = totalPrice;
+};
+
+//boucle qui calcule la quantité totale des produits dans le panier
+const totalQuantity = () => {
+  let totalQty = 0;
+  let nbr = selectAll(".itemQuantity");
+  for (let i = 0; i < nbr.length; i++) {
+    let value = nbr[i].value;
+    totalQty += parseInt(value);
+  }
+  querySelect("#totalQuantity").textContent = totalQty;
+};
+
+//Remplace les données stockées par celles de la page
+const storeNewCart = (data) => {
+  cart = [];
+  for (let i = 0; i < data; i++) {
+    let product = {
+      id: "",
+      color: "",
+      quantity: "",
+    };
+    product.id = selectAll(".cart__item")[i].dataset.id; //dataset permet de lire les attribut data de l'html (data-color // data-id)
+    product.color = selectAll(".cart__item")[i].dataset.color;
+    product.quantity = selectAll(".itemQuantity")[i].value;
+    cart.push(product);
+  }
+  localStorage.setItem("cart", JSON.stringify(cart));
+};
+
+//Supprime un produit du panier et lance les fonctions de recalcul et de stockage
+const deleteArticle = () => {
+  let data = cart.length;
+  for (let i = 0; i < data; i++) {
+    selectAll(".deleteItem")[i].addEventListener("click", function () {
+      let supp = selectAll(".deleteItem")[i].closest(".cart__item"); // utiliser la methode closet qui permet de savoir qui est lancetre
+      supp.remove(); //remove permet de supprimer l'element d'une liste deroulante
+      storeNewCart(cart.length - 1);
+      totalQuantity();
+      totalPrice();
+    });
+  }
+};
+
+//Reaction dynamique à la modification ou suppression des produits
+const dynamicChange = () => {
+  for (let i = 0; i < cart.length; i++) {
+    selectAll(".itemQuantity")[i].addEventListener("input", function () {
+      totalQuantity();
+      totalPrice();
+      storeNewCart(cart.length);
+    });
+  }
+  deleteArticle();
+};
+
+//Affichage des produits du panier
+async function display() {
+  if (getById("cart__items") != null && cart != null) {
+    for (i in cart) {
+      let data = await fetch(
+        `http://localhost:3000/api/products/${cart[i].id}`
       );
-      getArticle.setAttribute("data-id", addArticle[product].id);
+      if (!data.ok) {
+        throw new Error(message);
+      }
+      let value = await data.json();
+      panierDisplay(value);
+    }
+    totalQuantity();
+    totalPrice();
+    dynamicChange();
+  }
+}
+display();
 
-      const getBaliseImg = creatEl("div");
-      getBaliseImg.className = "cart__item__img";
+/* FORMULAIRE */
+let contact = {
+  firstName: "",
+  lastName: "",
+  address: "",
+  city: "",
+  email: "",
+};
+//Enregistre les données si les champs sont bien remplis
+const confirmForm = () => {
+  if (
+    validFirstName == true &&
+    validLastName == true &&
+    validAddress == true &&
+    validCity == true &&
+    validEmail == true
+  ) {
+    contact.firstName = getById("firstName").value;
+    contact.lastName = getById("lastName").value;
+    contact.address = getById("address").value;
+    contact.city = getById("city").value;
+    contact.email = getById("email").value;
+  }
+};
 
-      const getImg = creatEl("img");
-      getImg.src = addArticle[product].img;
-      getImg.alt = addArticle[product].alt;
+//Liste les id des produits dans le panier
+const confirmProducts = () => {
+  products = [];
+  for (i in cart) {
+    products.push(cart[i].id);
+  }
+};
 
-      const getItemContent = creatEl("div");
-      getItemContent.className = "cart__item__content";
+let products = [];
 
-      const getItemContentDescription = creatEl("div");
-      getItemContentDescription.className = "cart__item__content__description";
+//Gère la validité des données entrées dans le formulaire
+const formulaire = () => {
+  const regexName = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
+  if (getById("cart__items") != null) {
+    getById("firstName").addEventListener("input", function (e) {
+      if (regexName.test(e.target.value) && e.target.value != "") {
+        getById("firstNameErrorMsg").textContent = "";
+        validFirstName = true;
+      } else {
+        getById("firstNameErrorMsg").textContent =
+          "Veuillez saisir un prénom valide";
+        return false;
+      }
+    });
+    getById("lastName").addEventListener("input", function (e) {
+      const regexName =
+        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
+      if (regexName.test(e.target.value) && e.target.value != "") {
+        getById("lastNameErrorMsg").textContent = "";
+        validLastName = true;
+      } else {
+        getById("lastNameErrorMsg").textContent =
+          "Veuillez entrer un nom valide";
+        return false;
+      }
+    });
+    getById("address").addEventListener("input", function (e) {
+      const regexAddress =
+        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.]+$/;
+      if (regexAddress.test(e.target.value) && e.target.value != "") {
+        getById("addressErrorMsg").textContent = "";
+        validAddress = true;
+      } else {
+        getById("addressErrorMsg").textContent =
+          "Veuillez entrer une addresse valide";
+        return false;
+      }
+    });
+    getById("city").addEventListener("input", function (e) {
+      const regexCity = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.\d]+$/;
+      if (regexCity.test(e.target.value) && e.target.value != "") {
+        getById("cityErrorMsg").textContent = "";
+        validCity = true;
+      } else {
+        getById("cityErrorMsg").textContent =
+          "Veuillez entrer une ville valide";
+        return false;
+      }
+    });
+    getById("email").addEventListener("input", function (e) {
+      const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]+$/;
+      if (regexEmail.test(e.target.value) && e.target.value != "") {
+        getById("emailErrorMsg").textContent = "";
+        validEmail = true;
+      } else {
+        getById("emailErrorMsg").textContent =
+          "Veuillez entrer une addresse email valide";
+        return false;
+      }
+    });
+  }
+};
+formulaire();
 
-      const getColor = creatEl("p");
-      getColor.textContent = addArticle[product].color;
-      getColor.className = "color";
-
-      const getPrix = creatEl("p");
-      getPrix.textContent = addArticle[product].prix + " €";
-
-      const getItemContentSettings = creatEl("div");
-      getItemContentSettings.className = "cart__item__content__settings";
-
-      const getItemContentQuantity = creatEl("div");
-      getItemContentQuantity.className =
-        "cart__item__content__settings__quantity";
-
-      const getName = creatEl("h2");
-      getName.textContent = addArticle[product].nom;
-      getName.className = addArticle[product].id;
-      getName.id = "id";
-
-      const getPQty = creatEl("p");
-      getPQty.textContent = "Qté : ";
-
-      const getQty = creatEl("input");
-      getQty.value = addArticle[product].qty;
-      getQty.className = "itemQuantity";
-      getQty.setAttribute("type", "number");
-      getQty.setAttribute("min", "1");
-      getQty.setAttribute("name", "itemQuantity");
-      getQty.addEventListener("change", changeQty);
-
-      const getBaliseDelete = creatEl("div");
-      getBaliseDelete.className = "cart__item__content__settings__delete";
-
-      const getDelete = creatEl("p");
-      getDelete.className = "deleteItem";
-      getDelete.textContent = "Supprimer";
-      /* getDelete.addEventListener("click", deleteArticle);
-      getDelete.myParamId = addArticle[product].id;
-      getDelete.myColorId = addArticle[product].color;*/
-      getDelete.addEventListener("click", (e) => {
-        const elt = e.target;
-        const parent = elt.closest("article");
-        deleteArticle(parent);
+//Envoie les détails de la commande à l'Api
+const confirmed = () => {
+  if (contact.firstName != "" && products.length > 0) {
+    let order = {
+      contact,
+      products,
+    };
+    fetch("http://localhost:3000/api/products/order", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(order),
+    })
+      .then(function (res) {
+        if (res.ok) {
+          return res.json();
+        }
+      })
+      .then(function (value) {
+        localStorage.removeItem("cart");
+        window.location.href = `../html/confirmation.html?order_id=${value.orderId}`;
+      })
+      .catch(function (err) {
+        console.log(err);
       });
-
-      getById("cart__items").appendChild(getArticle); // la methode appendChild  vous permet d'ajouter un nœud à la fin de la liste des nœuds enfants d'un nœud parent spécifié.
-      getArticle.appendChild(getBaliseImg);
-      getBaliseImg.appendChild(getImg);
-      getArticle.appendChild(getItemContent);
-      getItemContent.appendChild(getItemContentDescription);
-      getItemContentDescription.appendChild(getName);
-      getItemContentDescription.appendChild(getColor);
-      getItemContentDescription.appendChild(getPrix);
-      getItemContent.appendChild(getItemContentSettings);
-      getItemContentSettings.appendChild(getItemContentQuantity);
-      getItemContentQuantity.appendChild(getPQty);
-      getItemContentQuantity.appendChild(getQty);
-      getItemContentSettings.appendChild(getBaliseDelete);
-      getBaliseDelete.appendChild(getDelete);
-    }
-  } else {
-    const getArticle = creatEl("article");
-    getArticle.className = "cart__item";
-    const alertPanierVide = creatEl("p");
-    alertPanierVide.style.fontSize = "25px";
-    alertPanierVide.textContent = "Panier vide !";
-    getById("cart__items").appendChild(getArticle);
-    getArticle.appendChild(alertPanierVide);
   }
 };
 
-window.onload = function () {
-  panierDisplay();
-};
-
-const prixNQty = () => {
-  //  permet d'afficher le prix total ainsi que la quantité
-  let panier = 0;
-  let quantity = 0;
-  if (addArticle !== null) {
-    for (let x = 0; x < addArticle.length; x++) {
-      let qty = addArticle[x].qty;
-      let prix = addArticle[x].prix;
-      quantity += qty;
-      panier += qty * prix;
-    }
-  } else {
-    panier = 0;
-    getById("totalPrice").textContent = panier;
+//Ecoute le clique du bouton commander et lance les autres fonctions
+const click = () => {
+  if (getById("cart__items") != null) {
+    const confirm = getById("order");
+    confirm.addEventListener("click", function (e) {
+      e.preventDefault(); //si la saisis est incorrect empeche le rechargement de la page
+      confirmForm();
+      confirmProducts();
+      confirmed();
+    });
   }
-  //console.log(panier);
-  getById("totalPrice").textContent = panier;
-  getById("totalQuantity").textContent = quantity;
 };
+click();
 
-prixNQty();
-
-const changeQty = (e) => {
-  console.log(e.target.value); //il faut qu'il change la qty total ainsi que dans le local storage ..... cree une nouvelle fonction pour changer la qty du produit sur le local storage et la qty total dans le DOM
-};
-
-const deleteArticle = (parent) => {
-  console.log(parent); // utiliser la methode closet qui permet de savoir qui est lancetre
-  //console.log(e.target.myColorId);
-  // supprimer l'article du DOM ... mettre a jour la qty total du DOM .. mettre a jour aussi le prix total
-  //sur le local storage supp le produit
-};
-
-// function qui permet de supprimer des articles
+/* TOOLS */
 
 function getById(id) {
   return document.getElementById(id);
 }
 
-function creatEl(type) {
+function selectAll(type) {
+  return document.querySelectorAll(type);
+}
+
+function createElem(type) {
   return document.createElement(type);
 }
-// ................... //
-// Formulaire
-// regex
+function querySelect(type) {
+  return document.querySelector(type);
+}
