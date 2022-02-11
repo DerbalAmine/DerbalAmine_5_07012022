@@ -267,33 +267,26 @@ const formulaire = () => {
 formulaire();
 
 //Envoie les détails de la commande à l'Api
-const confirmed = () => {
-  if (contact.firstName != "" && products.length > 0) {
-    let order = {
-      contact,
-      products,
-    };
-    fetch("http://localhost:3000/api/products/order", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(order),
+const requetePost = () => {
+    // Donnees a envoyer 
+  let order = {
+    contact,
+    products,
+  };
+  fetch("http://localhost:3000/api/products/order", {
+    method: "POST",
+    body: JSON.stringify(order),
+    headers: { "Content-Type": "application/json" },
+  })
+    .then(function (res) {
+      if (res.ok) {
+        return res.json();
+      }
     })
-      .then(function (res) {
-        if (res.ok) {
-          return res.json();
-        }
-      })
-      .then(function (value) {
-        localStorage.removeItem("cart");
-        window.location.href = `../html/confirmation.html?order_id=${value.orderId}`;
-      })
-      .catch(function (err) {
-        console.log(err);
-      });
-  }
+    .then(function (value) {
+      localStorage.removeItem("cart");
+      window.location.href = `../html/confirmation.html?order_id=${value.orderId}`;
+    });
 };
 
 //Ecoute le clique du bouton commander et lance les autres fonctions
@@ -304,7 +297,7 @@ const click = () => {
       e.preventDefault(); //si la saisis est incorrect empeche le rechargement de la page
       confirmForm();
       confirmProducts();
-      confirmed();
+      requetePost();
     });
   }
 };
