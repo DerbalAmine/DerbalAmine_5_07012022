@@ -1,4 +1,28 @@
-let cart = JSON.parse(localStorage.getItem("cart"));
+window.onload = function () {
+  initPage();
+};
+//Affichage des produits du panier
+async function display() {
+  let cart = JSON.parse(localStorage.getItem("cart"));
+  if (cart != null && cart != "") {
+    for (let i in cart) {
+      let data = await fetch(
+        `http://localhost:3000/api/products/${cart[i].id}`
+      );
+      if (!data.ok) {
+        throw new Error(message);
+      }
+      let value = await data.json();
+      panierDisplay(value, cart[i]);
+    }
+    totalQuantity();
+    totalPrice();
+    dynamicChange();
+
+    const confirm = getById("order");
+    confirm.addEventListener("click", submitOrder);
+  }
+}
 
 //Insère l'id de commande dans la page confirmation
 const initPage = () => {
@@ -7,16 +31,17 @@ const initPage = () => {
   const elem = getById("orderId");
   if (elem != null) {
     elem.textContent = orderId;
+  } else {
+    display();
   }
 };
-initPage();
 
 //Ajoute le html avec les valeurs retournées par fetch
-const panierDisplay = (value) => {
+const panierDisplay = (value, cart) => {
   let getArticle = createElem("article");
   getArticle.setAttribute("class", "cart__item");
   getArticle.setAttribute("data-id", value._id);
-  getArticle.setAttribute("data-color", cart[i].color);
+  getArticle.setAttribute("data-color", cart.color);
   let target = querySelect("#cart__items");
   target.appendChild(getArticle); // la methode appendChild  vous permet d'ajouter un nœud à la fin de la liste des nœuds enfants d'un nœud parent spécifié.
   getArticle = createElem("div");
@@ -41,7 +66,7 @@ const panierDisplay = (value) => {
   target = selectAll(".cart__item__content__description");
   target[target.length - 1].appendChild(getArticle);
   getArticle = createElem("p");
-  getArticle.textContent = cart[i].color;
+  getArticle.textContent = cart.color;
   target = selectAll(".cart__item__content__description");
   target[target.length - 1].appendChild(getArticle);
   getArticle = createElem("p");
@@ -66,7 +91,7 @@ const panierDisplay = (value) => {
   getArticle.setAttribute("name", "itemQuantity");
   getArticle.setAttribute("min", 1);
   getArticle.setAttribute("max", 100);
-  getArticle.setAttribute("value", cart[i].quantity);
+  getArticle.setAttribute("value", cart.quantity);
   target = selectAll(".cart__item__content__settings__quantity");
   target[target.length - 1].appendChild(getArticle);
   getArticle = createElem("div");
@@ -105,7 +130,9 @@ const totalQuantity = () => {
 };
 
 //Remplace les données stockées par celles de la page
+
 const storeNewCart = (data) => {
+  let cart = JSON.parse(localStorage.getItem("cart"));
   cart = [];
   for (let i = 0; i < data; i++) {
     let product = {
@@ -123,6 +150,7 @@ const storeNewCart = (data) => {
 
 //Supprime un produit du panier et lance les fonctions de recalcul et de stockage
 const deleteArticle = () => {
+  let cart = JSON.parse(localStorage.getItem("cart"));
   let data = cart.length;
   for (let i = 0; i < data; i++) {
     selectAll(".deleteItem")[i].addEventListener("click", function () {
@@ -137,6 +165,7 @@ const deleteArticle = () => {
 
 //Reaction dynamique à la modification ou suppression des produits
 const dynamicChange = () => {
+  let cart = JSON.parse(localStorage.getItem("cart"));
   for (let i = 0; i < cart.length; i++) {
     selectAll(".itemQuantity")[i].addEventListener("input", function () {
       totalQuantity();
@@ -147,36 +176,75 @@ const dynamicChange = () => {
   deleteArticle();
 };
 
-//Affichage des produits du panier
-async function display() {
-  if (getById("cart__items") != null && cart != null) {
-    for (i in cart) {
-      let data = await fetch(
-        `http://localhost:3000/api/products/${cart[i].id}`
-      );
-      if (!data.ok) {
-        throw new Error(message);
-      }
-      let value = await data.json();
-      panierDisplay(value);
-    }
-    totalQuantity();
-    totalPrice();
-    dynamicChange();
-  }
-}
-display();
-
 /* FORMULAIRE */
-let contact = {
-  firstName: "",
-  lastName: "",
-  address: "",
-  city: "",
-  email: "",
-};
+//let products = [];
+
 //Enregistre les données si les champs sont bien remplis
 const confirmForm = () => {
+  let validFirstName = false;
+  let validLastName = false;
+  let validAddress = false;
+  let validCity = false;
+  let validEmail = false;
+  const regexName = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
+  if (getById("cart__items") != "") {
+    getById("firstName").addEventListener("input", function (e) {
+      if (regexName.test(e.target.value) && e.target.value != "") {
+        getById("firstNameErrorMsg").textContent = "";
+        validFirstName = true;
+      } else {
+        getById("firstNameErrorMsg").textContent =
+          "Veuillez saisir un prénom valide";
+        return false;
+      }
+    });
+    getById("lastName").addEventListener("input", function (e) {
+      const regexName =
+        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
+      if (regexName.test(e.target.value) && e.target.value != "") {
+        getById("lastNameErrorMsg").textContent = "";
+        validLastName = true;
+      } else {
+        getById("lastNameErrorMsg").textContent =
+          "Veuillez entrer un nom valide";
+        return false;
+      }
+    });
+    getById("address").addEventListener("input", function (e) {
+      const regexAddress =
+        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.]+$/;
+      if (regexAddress.test(e.target.value) && e.target.value != "") {
+        getById("addressErrorMsg").textContent = "";
+        validAddress = true;
+      } else {
+        getById("addressErrorMsg").textContent =
+          "Veuillez entrer une addresse valide";
+        return false;
+      }
+    });
+    getById("city").addEventListener("input", function (e) {
+      const regexCity = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.\d]+$/;
+      if (regexCity.test(e.target.value) && e.target.value != "") {
+        getById("cityErrorMsg").textContent = "";
+        validCity = true;
+      } else {
+        getById("cityErrorMsg").textContent =
+          "Veuillez entrer une ville valide";
+        return false;
+      }
+    });
+    getById("email").addEventListener("input", function (e) {
+      const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]+$/;
+      if (regexEmail.test(e.target.value) && e.target.value != "") {
+        getById("emailErrorMsg").textContent = "";
+        validEmail = true;
+      } else {
+        getById("emailErrorMsg").textContent =
+          "Veuillez entrer une addresse email valide";
+        return false;
+      }
+    });
+  }
   if (
     validFirstName == true &&
     validLastName == true &&
@@ -184,23 +252,27 @@ const confirmForm = () => {
     validCity == true &&
     validEmail == true
   ) {
+    console.log("tata");
+    let contact = {};
     contact.firstName = getById("firstName").value;
     contact.lastName = getById("lastName").value;
     contact.address = getById("address").value;
     contact.city = getById("city").value;
     contact.email = getById("email").value;
+    confirmProducts();
   }
+  console.log("tota");
 };
 
 //Liste les id des produits dans le panier
 const confirmProducts = () => {
+  let cart = JSON.parse(localStorage.getItem("cart"));
   products = [];
   for (i in cart) {
     products.push(cart[i].id);
   }
+  requetePost();
 };
-
-let products = [];
 
 //Gère la validité des données entrées dans le formulaire
 const formulaire = () => {
@@ -264,11 +336,10 @@ const formulaire = () => {
     });
   }
 };
-formulaire();
 
 //Envoie les détails de la commande à l'Api
 const requetePost = () => {
-    // Donnees a envoyer 
+  // Donnees a envoyer
   let order = {
     contact,
     products,
@@ -290,18 +361,11 @@ const requetePost = () => {
 };
 
 //Ecoute le clique du bouton commander et lance les autres fonctions
-const click = () => {
-  if (getById("cart__items") != null) {
-    const confirm = getById("order");
-    confirm.addEventListener("click", function (e) {
-      e.preventDefault(); //si la saisis est incorrect empeche le rechargement de la page
-      confirmForm();
-      confirmProducts();
-      requetePost();
-    });
-  }
+const submitOrder = (e) => {
+  console.log("toto");
+  e.preventDefault(); //si la saisis est incorrect empeche le rechargement de la page
+  confirmForm();
 };
-click();
 
 /* TOOLS */
 
