@@ -9,7 +9,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
   .then(function (value) {
     console.table(value);
     for (const couleur of value.colors) {
-      const colorsArticle = createElem("option"); // boucle qui permet ce choisir les couleurs souhaiter
+      const colorsArticle = createElem("option"); // boucle qui permet de choisir les couleurs souhaiter
       colorsArticle.value = couleur;
       colorsArticle.textContent = couleur;
       getById("colors").appendChild(colorsArticle);
@@ -23,10 +23,7 @@ fetch(`http://localhost:3000/api/products/${id}`)
     getImg.alt = value.altTxt;
     document.querySelector(".item__img").appendChild(getImg);
   });
-/* .catch(function (err) {
-    console.log(err);
-  });
-*/
+
 //Fonction alerte choix après ajout au panier
 const afterAdd = () => {
   if (confirm("Produit ajouté a votre panier.\nAller directement au panier?")) {

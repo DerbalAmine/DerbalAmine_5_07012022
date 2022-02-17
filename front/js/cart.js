@@ -1,8 +1,21 @@
 window.onload = function () {
+  // appele la fonction InitPage
   initPage();
 };
+
+//Insère l'id de commande dans la page confirmation
+const initPage = () => {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get("order_id") != null) {
+    const elem = getById("orderId");
+    elem.textContent = params.get("order_id");
+  } else {
+    display();
+  }
+};
+
 //Affichage des produits du panier
-async function display() {
+const display = async () => {
   let cart = JSON.parse(localStorage.getItem("cart"));
   if (cart != null && cart != "") {
     for (let i in cart) {
@@ -18,21 +31,7 @@ async function display() {
     totalQuantity();
     totalPrice();
     dynamicChange();
-
-    const confirm = getById("order");
-    confirm.addEventListener("click", submitOrder);
-  }
-}
-
-//Insère l'id de commande dans la page confirmation
-const initPage = () => {
-  const url = new URL(window.location.href);
-  const orderId = url.searchParams.get("order_id");
-  const elem = getById("orderId");
-  if (elem != null) {
-    elem.textContent = orderId;
-  } else {
-    display();
+    submitOrder();
   }
 };
 
@@ -177,168 +176,57 @@ const dynamicChange = () => {
 };
 
 /* FORMULAIRE */
-//let products = [];
+const getElem = (e) => {
+  e.preventDefault();
+  let contact = {};
+  const selectForm = document.forms[0];
 
-//Enregistre les données si les champs sont bien remplis
-const confirmForm = () => {
-  let validFirstName = false;
-  let validLastName = false;
-  let validAddress = false;
-  let validCity = false;
-  let validEmail = false;
-  const regexName = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
-  if (getById("cart__items") != "") {
-    getById("firstName").addEventListener("input", function (e) {
-      if (regexName.test(e.target.value) && e.target.value != "") {
-        getById("firstNameErrorMsg").textContent = "";
-        validFirstName = true;
-      } else {
-        getById("firstNameErrorMsg").textContent =
-          "Veuillez saisir un prénom valide";
-        return false;
-      }
-    });
-    getById("lastName").addEventListener("input", function (e) {
-      const regexName =
-        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
-      if (regexName.test(e.target.value) && e.target.value != "") {
-        getById("lastNameErrorMsg").textContent = "";
-        validLastName = true;
-      } else {
-        getById("lastNameErrorMsg").textContent =
-          "Veuillez entrer un nom valide";
-        return false;
-      }
-    });
-    getById("address").addEventListener("input", function (e) {
-      const regexAddress =
-        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.]+$/;
-      if (regexAddress.test(e.target.value) && e.target.value != "") {
-        getById("addressErrorMsg").textContent = "";
-        validAddress = true;
-      } else {
-        getById("addressErrorMsg").textContent =
-          "Veuillez entrer une addresse valide";
-        return false;
-      }
-    });
-    getById("city").addEventListener("input", function (e) {
-      const regexCity = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.\d]+$/;
-      if (regexCity.test(e.target.value) && e.target.value != "") {
-        getById("cityErrorMsg").textContent = "";
-        validCity = true;
-      } else {
-        getById("cityErrorMsg").textContent =
-          "Veuillez entrer une ville valide";
-        return false;
-      }
-    });
-    getById("email").addEventListener("input", function (e) {
-      const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]+$/;
-      if (regexEmail.test(e.target.value) && e.target.value != "") {
-        getById("emailErrorMsg").textContent = "";
-        validEmail = true;
-      } else {
-        getById("emailErrorMsg").textContent =
-          "Veuillez entrer une addresse email valide";
-        return false;
-      }
-    });
+  const firstName = selectForm.elements.firstName.value;
+  if (checkData("firstName", firstName)) {
+    return false;
   }
-  if (
-    validFirstName == true &&
-    validLastName == true &&
-    validAddress == true &&
-    validCity == true &&
-    validEmail == true
-  ) {
-    console.log("tata");
-    let contact = {};
-    contact.firstName = getById("firstName").value;
-    contact.lastName = getById("lastName").value;
-    contact.address = getById("address").value;
-    contact.city = getById("city").value;
-    contact.email = getById("email").value;
-    confirmProducts();
+  contact.firstName = firstName;
+
+  const lastName = selectForm.elements.lastName.value;
+  if (checkData("lastName", lastName)) {
+    return false;
   }
-  console.log("tota");
+  contact.lastName = lastName;
+
+  const address = selectForm.elements.address.value;
+  if (checkData("address", address)) {
+    return false;
+  }
+  contact.address = address;
+
+  const city = selectForm.elements.city.value;
+  if (checkData("city", city)) {
+    return false;
+  }
+  contact.city = city;
+
+  const email = selectForm.elements.email.value;
+  if (checkData("email", email)) {
+    return false;
+  }
+  contact.email = email;
+  confirmProducts(contact);
 };
 
 //Liste les id des produits dans le panier
-const confirmProducts = () => {
+const confirmProducts = (contact) => {
   let cart = JSON.parse(localStorage.getItem("cart"));
   products = [];
   for (i in cart) {
     products.push(cart[i].id);
   }
-  requetePost();
-};
-
-//Gère la validité des données entrées dans le formulaire
-const formulaire = () => {
-  const regexName = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
-  if (getById("cart__items") != null) {
-    getById("firstName").addEventListener("input", function (e) {
-      if (regexName.test(e.target.value) && e.target.value != "") {
-        getById("firstNameErrorMsg").textContent = "";
-        validFirstName = true;
-      } else {
-        getById("firstNameErrorMsg").textContent =
-          "Veuillez saisir un prénom valide";
-        return false;
-      }
-    });
-    getById("lastName").addEventListener("input", function (e) {
-      const regexName =
-        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.,\d\s]+$/;
-      if (regexName.test(e.target.value) && e.target.value != "") {
-        getById("lastNameErrorMsg").textContent = "";
-        validLastName = true;
-      } else {
-        getById("lastNameErrorMsg").textContent =
-          "Veuillez entrer un nom valide";
-        return false;
-      }
-    });
-    getById("address").addEventListener("input", function (e) {
-      const regexAddress =
-        /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.]+$/;
-      if (regexAddress.test(e.target.value) && e.target.value != "") {
-        getById("addressErrorMsg").textContent = "";
-        validAddress = true;
-      } else {
-        getById("addressErrorMsg").textContent =
-          "Veuillez entrer une addresse valide";
-        return false;
-      }
-    });
-    getById("city").addEventListener("input", function (e) {
-      const regexCity = /^[^±!@£$%^&*_+¡€#¢§¶•ªº()"«\\/\{\}\[\]\~<>?:;|=.\d]+$/;
-      if (regexCity.test(e.target.value) && e.target.value != "") {
-        getById("cityErrorMsg").textContent = "";
-        validCity = true;
-      } else {
-        getById("cityErrorMsg").textContent =
-          "Veuillez entrer une ville valide";
-        return false;
-      }
-    });
-    getById("email").addEventListener("input", function (e) {
-      const regexEmail = /^[\w-\.]+@([\w-]+\.)+[\w-]+$/;
-      if (regexEmail.test(e.target.value) && e.target.value != "") {
-        getById("emailErrorMsg").textContent = "";
-        validEmail = true;
-      } else {
-        getById("emailErrorMsg").textContent =
-          "Veuillez entrer une addresse email valide";
-        return false;
-      }
-    });
-  }
+  console.log(contact);
+  console.log(products);
+  requetePost(contact, products);
 };
 
 //Envoie les détails de la commande à l'Api
-const requetePost = () => {
+const requetePost = (contact, products) => {
   // Donnees a envoyer
   let order = {
     contact,
@@ -360,26 +248,111 @@ const requetePost = () => {
     });
 };
 
-//Ecoute le clique du bouton commander et lance les autres fonctions
-const submitOrder = (e) => {
-  console.log("toto");
-  e.preventDefault(); //si la saisis est incorrect empeche le rechargement de la page
-  confirmForm();
+// Bind event on input type Submit (event.preventDefault in getElem to stop propagation)
+const submitOrder = () => {
+  const button = getById("order");
+  button.addEventListener("click", getElem);
+
+  const selectForm = document.forms[0];
+  selectForm.elements.firstName.addEventListener("keyup", checkContent);
+  selectForm.elements.lastName.addEventListener("keyup", checkContent);
+  selectForm.elements.address.addEventListener("keyup", checkContent);
+  selectForm.elements.city.addEventListener("keyup", checkContent);
+  selectForm.elements.email.addEventListener("keyup", checkContent);
+};
+
+const checkContent = (e) => {
+  if (checkData(e.target.id, e.target.value)) {
+    return false;
+  } else {
+    let msg = getById(e.target.id + "ErrorMsg");
+    msg.textContent = "";
+  }
+};
+
+/**
+ *  validate form
+ */
+const checkData = (type, val) => {
+  let ret = false;
+  switch (type) {
+    case "firstName":
+    case "lastName":
+    case "city":
+      ret = checkNoNumber(type, val);
+      break;
+    case "address":
+      ret = checkaddress(type, val);
+      break;
+    case "email":
+      ret = checkemail(type, val);
+      break;
+  }
+
+  return ret;
+};
+
+/**
+ *  Test avec arg type = firstname || lastname || city, arg val string without number or special characters
+ */
+const checkNoNumber = (type, val) => {
+  //Regex
+  const checkNumber = /[0-9]/;
+  const checkSpecialCharacter = /[§!@#$%^&*(),.?":{}|<>]/;
+  if (
+    checkNumber.test(val) === true ||
+    checkSpecialCharacter.test(val) === true ||
+    val === ""
+  ) {
+    let msg = getById(type + "ErrorMsg");
+    msg.textContent = "You must fill the field with only letters";
+    return true;
+  }
+  return false;
+};
+
+/**
+ *  Test avec arg type = address, arg val string without special characters
+ */
+const checkaddress = (type, val) => {
+  //regex
+  const checkSpecialCharacter = /[§!@#$%^&*(),.?":{}|<>]/;
+  if (checkSpecialCharacter.test(val) === true || val == "") {
+    let msg = getById(type + "ErrorMsg");
+    msg.textContent = "You must fill the field with only letters and numbers";
+    return true;
+  }
+  return false;
+};
+
+/**
+ *  Test avec arg type = email, arg val string /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/
+ */
+const checkemail = (type, val) => {
+  //emailregex.com
+  const checkMail = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  if (checkMail.test(val) === false) {
+    let msg = getById(type + "ErrorMsg");
+    msg.textContent = "You must fill the field with a valid email";
+    return true;
+  }
+  return false;
 };
 
 /* TOOLS */
 
-function getById(id) {
+const getById = (id) => {
   return document.getElementById(id);
-}
+};
 
-function selectAll(type) {
+const selectAll = (type) => {
   return document.querySelectorAll(type);
-}
+};
 
-function createElem(type) {
+const createElem = (type) => {
   return document.createElement(type);
-}
-function querySelect(type) {
+};
+
+const querySelect = (type) => {
   return document.querySelector(type);
-}
+};
