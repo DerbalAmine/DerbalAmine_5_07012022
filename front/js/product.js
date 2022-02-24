@@ -1,29 +1,31 @@
-let id = new URLSearchParams(window.location.search).get("id"); // Permet de récupérer la valeur de l'ID
+const getProduct = () => {
+  let id = new URLSearchParams(window.location.search).get("id"); // Permet de récupérer la valeur de l'ID
 
-fetch(`http://localhost:3000/api/products/${id}`)
-  .then(function (res) {
-    if (res.ok) {
-      return res.json();
-    }
-  })
-  .then(function (value) {
-    console.table(value);
-    for (const couleur of value.colors) {
-      const colorsArticle = createElem("option"); // boucle qui permet de choisir les couleurs souhaiter
-      colorsArticle.value = couleur;
-      colorsArticle.textContent = couleur;
-      getById("colors").appendChild(colorsArticle);
-    }
-    getById("addToCart").addEventListener("click", addToCart);
-    getById("title").textContent = value.name;
-    getById("price").textContent = value.price;
-    getById("description").textContent = value.description;
-    const getImg = createElem("img"); // variable qui est egal a l'element "img"
-    getImg.src = value.imageUrl;
-    getImg.alt = value.altTxt;
-    document.querySelector(".item__img").appendChild(getImg);
-  });
-
+  fetch(`http://localhost:3000/api/products/${id}`)
+    .then(function (res) {
+      if (res.ok) {
+        return res.json();
+      }
+    })
+    .then((product) => {
+      console.table(product);
+      for (const couleur of product.colors) {
+        const colorsArticle = createElem("option"); // boucle qui permet de choisir les couleurs souhaiter
+        colorsArticle.product = couleur;
+        colorsArticle.textContent = couleur;
+        getById("colors").appendChild(colorsArticle);
+      }
+      getById("addToCart").addEventListener("click", addToCart);
+      getById("title").textContent = product.name;
+      getById("price").textContent = product.price;
+      getById("description").textContent = product.description;
+      getById("addToCart").setAttribute("data-id", product._id);
+      const getImg = createElem("img"); // variable qui est egal a l'element "img"
+      getImg.src = product.imageUrl;
+      getImg.alt = product.altTxt;
+      document.querySelector(".item__img").appendChild(getImg);
+    });
+};
 //Fonction alerte choix après ajout au panier
 const afterAdd = () => {
   if (confirm("Produit ajouté a votre panier.\nAller directement au panier?")) {
@@ -37,7 +39,8 @@ const afterAdd = () => {
 const addToCart = () => {
   let quantity = parseInt(getById("quantity").value); // parseInt permet d'ignorer les caracteres qui ne sont pas des chiffres
   let color = getById("colors").value;
-
+  let id = getById("addToCart").getAttribute("data-id");
+  console.log(id);
   let prod = {
     id: id,
     color: color /*getById("colors").value,*/,
@@ -51,11 +54,11 @@ const addToCart = () => {
   }
   //Vérifie si il y a déja le produit dans le panier avec une couleur similaire pour ne modifier que la quantité
   if (localStorage.getItem("cart")) {
-    cart = JSON.parse(localStorage.getItem("cart"));
-    for (i in cart) {
+    cart = JSON.parse(localStorage.getItem("cart")); //parse ???
+    for (let i in cart) {
       if (cart[i].id == prod.id && cart[i].color == prod.color) {
-        cart[i].quantity = parseInt(cart[i].quantity) + parseInt(prod.quantity);
-        localStorage.setItem("cart", JSON.stringify(cart)); // la methode stringify convertit une valeur js en chaine JSON
+        cart[i].quantity = parseInt(cart[i].quantity) + parseInt(prod.quantity); // La fonction parseInt() analyse une chaîne de caractère fournie en argument et renvoie un entier exprimé dans une base donnée.
+        localStorage.setItem("cart", JSON.stringify(cart)); // la methode stringify convertit un objet en chaine de caractere 
         afterAdd();
         return;
       }
@@ -76,3 +79,7 @@ function createElem(type) {
 function getById(id) {
   return document.getElementById(id);
 }
+window.onload = function () {
+  // console.log("slt");
+  getProduct();
+};

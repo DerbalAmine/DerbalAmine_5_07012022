@@ -254,7 +254,7 @@ const submitOrder = () => {
   button.addEventListener("click", getElem);
 
   const selectForm = document.forms[0];
-  selectForm.elements.firstName.addEventListener("keyup", checkContent);
+  selectForm.elements.firstName.addEventListener("keyup", checkContent); // keyup permet de savoir via un code quelle touche a etait enfoncee
   selectForm.elements.lastName.addEventListener("keyup", checkContent);
   selectForm.elements.address.addEventListener("keyup", checkContent);
   selectForm.elements.city.addEventListener("keyup", checkContent);

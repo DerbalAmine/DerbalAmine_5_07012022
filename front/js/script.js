@@ -1,3 +1,11 @@
+const userDisplay = async () => {
+  const kanap = await fetchKanap();
+  console.log(kanap);
+  kanap.map((prod) => { // .map une copie du tableaux 
+    create(prod);
+  });
+};
+
 // creation de la fonction fetchKanap en mode 'asynchrone' qui permet au code d'etre executer pendant qu’une opération plus longue ou demandant une réponse / valeur est en cours.
 const fetchKanap = async () => {
   const reponse = await fetch("http://localhost:3000/api/products"); //Chemin de la ressource que nous souhaitons recuperer qui permet de retourner une 'promesse'.
@@ -5,16 +13,8 @@ const fetchKanap = async () => {
   return reponse.json(); // promesse qui convertit le js en jSon. ... methode qui s'auto-resout en renvoiyant le body de la requete
 };
 
-const userDisplay = async () => {
-  const kanap = await fetchKanap();
-  console.log(kanap);
-  kanap.map((prod) => {
-    create(prod);
-  });
-};
-
-// la fonction create(), affiche les donnees sous forme de html 
-//utiliser le parametre 'prod' pour faire l'appel de la fonction 
+// la fonction create(), permet de cree les elements html.
+//utiliser l'objet 'prod' pour donner des valeurs au element 
 const create = (prod) => {
   let link = createElem("a");
   link.setAttribute("href", "./product.html?id=" + prod._id);
@@ -37,8 +37,8 @@ const create = (prod) => {
 
   link.append(article);
 
-  getById("items").append(link);
-}
+  getById("items").append(link); // affiche les donnees 
+};
 /* TOOLS */
 function createElem(type) {
   return document.createElement(type);
@@ -52,4 +52,3 @@ window.onload = function () {
   // console.log("slt");
   userDisplay();
 };
-
